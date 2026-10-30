@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:J4l4n5m4m!n@db.qqgbbqozqgufosgzowzu.supabase.co:5432/postgres?4sslmode=require&connect_timeout=30"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        Role         @default(EMPLOYEE)
+  attendances Attendance[]
+  createdAt   DateTime     @default(now())
+}
+
+model Location {
+  id             String       @id @default(cuid())
+  name           String
+  latitude       Float
+  longitude      Float
+  radiusInMeters Int          @default(100)
+  attendances    Attendance[]
+}
+
+model Attendance {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  locationId   String
+  location     Location  @relation(fields: [locationId], references: [id])
+  checkInTime  DateTime  @default(now())
+  checkOutTime DateTime?
+  checkInPhoto String?
+  status       String    @default("HADIR")
+  latitude     Float
+  longitude    Float
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
