@@ -1,21 +1,13 @@
-export const dynamic = 'force-dynamic';
-
 import { prisma } from '../../lib/prisma';
+import { Suspense } from 'react';
 
-// Fungsi untuk mengambil data dengan aman di Next.js 16
-async function getAdminData() {
+async function AdminContent() {
   const totalAttendance = await prisma.attendance.count();
   const recentList = await prisma.attendance.findMany({
     take: 10,
     orderBy: { checkInTime: 'desc' },
     include: { user: true, location: true },
   });
-
-  return { totalAttendance, recentList };
-}
-
-export default async function AdminDashboard() {
-  const { totalAttendance, recentList } = await getAdminData();
 
   return (
     <div className="min-h-screen bg-slate-100 p-6">
@@ -38,5 +30,13 @@ export default async function AdminDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center">Memuat data admin...</div>}>
+      <AdminContent />
+    </Suspense>
   );
 }
