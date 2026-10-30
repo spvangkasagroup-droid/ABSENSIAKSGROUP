@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma';
-export const dynamic = 'force-dynamic';
+import { unstable_noStore as noStore } from 'next/cache';
 export default async function AdminDashboard() {
   const totalAttendance = await prisma.attendance.count();
   const recentList = await prisma.attendance.findMany({
