@@ -1,35 +1,39 @@
 import { prisma } from '../../lib/prisma';
+import { Suspense } from 'react';
 
-export default async function HistoryPage() {
-  // Mengambil data absensi dari database
-  const attendances = await prisma.attendance.findMany({
+// Komponen internal untuk mengambil data riwayat
+async function HistoryContent() {
+  const historyList = await prisma.attendance.findMany({
+    take: 50,
     orderBy: { checkInTime: 'desc' },
     include: { user: true, location: true },
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow p-6">
-        <h1 className="text-xl font-bold text-slate-800 mb-4">Riwayat Absensi Karyawan</h1>
-        <div className="space-y-4">
-          {attendances.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-4 border rounded-xl bg-slate-50">
-              <div>
-                <p className="font-semibold text-slate-700">{item.user?.name || 'Karyawan'}</p>
-                <p className="text-xs text-slate-500">
-                  {new Date(item.checkInTime).toLocaleString('id-ID')}
-                </p>
-                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-full">
-                  {item.status}
-                </span>
-              </div>
-              {item.checkInPhoto && (
-                <img src={item.checkInPhoto} alt="Bukti" className="w-16 h-16 object-cover rounded-lg border" />
-              )}
-            </div>
+    <div className="min-h-screen bg-slate-100 p-6">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow p-6">
+        <h1 className="text-2xl font-bold text-slate-800 mb-6">Riwayat Absensi</h1>
+        {/* Tampilkan data riwayat Anda di sini */}
+        <ul className="divide-y divide-slate-200">
+          {historyList.map((item: any) => (
+            <li key={item.id} className="py-3 flex justify-between">
+              <span>{item.user?.name || 'Karyawan'}</span>
+              <span className="text-slate-500 text-sm">
+                {new Date(item.checkInTime).toLocaleString()}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
+  );
+}
+
+// Halaman utama dengan pembungkus Suspense
+export default function HistoryPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center">Memuat riwayat...</div>}>
+      <HistoryContent />
+    </Suspense>
   );
 }
